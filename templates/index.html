@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+  <h2 class="text-center">Добро пожаловать в модуль оценки аудиторного фонда</h2>
+<div class="mt-3 mb-5 text-center">
+  <img class="img-fluid" src="{{ url_for('static', filename='img/diag.png') }}">
+</div>
+{% endblock %}

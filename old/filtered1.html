@@ -1,0 +1,143 @@
+<div class="row mb-3 text-start">
+    <div class="col-4">
+        <label for="id_category" class="form-label">Категория</label>
+        <select id="id_category" class="form-select">
+            <option value="">Выберите значение</option>
+            {% for category in categories_list %}
+            <option value="{{ category.id_category }}">{{ category.name_category }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-2">
+        <label for="id_condition" class="form-label">Состояние</label>
+        <select id="id_condition" class="form-select">
+            <option value="">Выберите значение</option>
+            {% for condition in conditions_list %}
+            <option value="{{ condition.id_condition }}">{{ condition.name_condition }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-6">
+        <label for="name_mto" class="form-label">Название МТО</label>
+        <input type="text" id="name_mto" class="form-control"/>
+    </div>
+</div>
+
+<div class="row mb-5 text-start">
+    <div class="col-2">
+        <label for="inventory_number" class="form-label">Инвентарный номер</label>
+        <input type="text" id="inventory_number" class="form-control"/>
+    </div>
+    <div class="col-2">
+        <label for="date_made" class="form-label">Дата производства</label>
+        <input type="date" id="date_made" class="form-control"/>
+    </div>
+    <div class="col-2">
+        <label for="date_setup" class="form-label">Дата установки</label>
+        <input type="date" id="date_setup" class="form-control"/>
+    </div>
+    <div class="col-3">
+        <label for="date_last_repair" class="form-label">Дата последнего ремонта</label>
+        <input type="date" id="date_last_repair" class="form-control"/>
+    </div>
+    <div class="col-1">
+        <label for="presense" class="form-label">Наличие</label>
+        <br>
+        <input type="checkbox" id="presense" checked/>
+    </div>
+    <div class="col-2 text-end">
+        <label for="add_btn" class="form-label">Действие</label>
+        <button class="btn btn-info" id="add_btn">Добавить МТО</button>
+    </div>
+</div>
+
+<div id="mto_div">
+    <table width="100%" class="table table-hover table-responsive" id="rating_table" style="font-size:12px;">
+        <thead>
+        <tr class="rating-caption">
+            <th>№</th>
+            <th>Категория</th>
+            <th>Состояние</th>
+            <th>Наличие</th>
+            <th>Название МТО</th>
+            <th>Инвентарный номер</th>
+            <th>Дата производства</th>
+            <th>Дата установки</th>
+            <th>Дата последнего ремонта</th>
+            <th colspan="2">Действия</th>
+        </tr>
+        </thead>
+        <tbody id="rating_table_tbody">
+        {% for mto in mtos %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ mto.name_category }}</td>
+            <td>{{ mto.name_condition }}</td>
+            <td>{{ 'ДА' if mto.presense == 1 else 'НЕТ' }}</td>
+            <td><input type="text" value="{{ mto.name_mto }}"/></td>
+            <td>{{ mto.inventory_number }}</td>
+            <td>{{ mto.date_made }}</td>
+            <td>{{ mto.date_setup }}</td>
+            <td>{{ mto.date_last_repair if mto.date_last_repair else '' }}</td>
+            <td><button class="btn btn-sm btn-danger" id="del_{{ mto.id_mto }}">Удалить</button></td>
+            <td><button class="btn btn-sm btn-warning" id="edit_{{ mto.id_mto }}">Ред-ть</button></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#add_btn').click(function() {
+            // Получение значений
+            var id_category = $('#id_category').val();
+            var id_condition = $('#id_condition').val();
+            var presense = $('#presense').val();
+            var name_mto = $('#name_mto').val();
+            var inventory_number = $('#inventory_number').val();
+            var date_made = $('#date_made').val();
+            var date_setup = $('#date_setup').val();
+            var date_last_repair = $('#date_last_repair').val();
+            var id_room = $('#id_room').val();
+
+            if(id_room < 1 || id_category < 1 || id_condition < 1 || presense < 0 || name_mto == '' || inventory_number == '' || date_made == '' || date_setup == '')
+            {
+                alert('Установите все значения');
+                return;
+            }
+
+            // Отправка AJAX запроса
+            $.ajax({
+                type: 'POST',
+                url: '/addmto',
+                data: {
+                    id_category: id_category,
+                    id_condition: id_condition,
+                    id_room: id_room,
+                    presense: presense,
+                    name_mto: name_mto,
+                    inventory_number: inventory_number,
+                    date_made: date_made,
+                    date_setup: date_setup,
+                    date_last_repair: date_last_repair
+                },
+                success: function(response) {
+                    if(response == 'OK')
+                        $('#filter_btn').click();
+                    else
+                        alert('Ошибка добавления МТО');
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $('div[id^="edit_"]').on('click', function() {
+            var id = $(this).attr('id');
+            var mtoId = id.split('_')[1];
+            window.location.href = 'newPage.html';
+        });
+    });
+</script>

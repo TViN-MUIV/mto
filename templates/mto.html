@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Управление аудиторным фондом{% endblock %}
+
+{% block content %}
+<h2 class="text-center mt-3 mb-4">Учет МТО</h2>
+<h5 class="text-start mt-3 mb-3">Последовательно выберите помещение, для которого надо вести учет МТО</h5>
+
+<div class="row mb-3">
+    <label for="id_department" class="col-md-4 text-end col-form-label">Подразделение:</label>
+    <div class="col-md-8">
+        <select id="id_department" class="form-select">
+            <option value="">Выберите значение</option>
+            {% for department in departments %}
+            <option value="{{ department.id_department }}">{{ department.name_department }}: {{ department.address_department }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<div class="row mb-3">
+    <label for="id_building" class="col-md-4 text-end col-form-label">Корпус:</label>
+    <div class="col-md-8">
+        <select id="id_building" class="form-select">
+        </select>
+    </div>
+</div>
+<div class="row mb-3">
+    <label for="id_floor" class="col-md-4 text-end col-form-label">Этаж:</label>
+    <div class="col-md-8">
+        <select id="id_floor" class="form-select">
+        </select>
+    </div>
+</div>
+<div class="row mb-4">
+    <label for="id_room" class="col-md-4 text-end col-form-label">Помещение:</label>
+    <div class="col-md-8">
+        <select id="id_room" class="form-select">
+        </select>
+    </div>
+</div>
+<div id="filter" class="mb-4 text-center invisible">
+    <button id="filter_btn" class="btn btn-primary">Отобразить МТО</button>
+    <div id="results" class="mt-5"></div>
+</div>
+
+<script>
+    $(document).ready(function() {
+
+        $('#id_department').change(function() {
+            $('#id_building').empty();
+            $('#id_floor').empty();
+            $('#id_room').empty();
+            $('#filter').addClass('invisible');
+            $('#results').empty();
+
+            // Получение выбранного значения
+            var selectedValue = $(this).val();
+            // Отправка AJAX запроса с выбранным значением
+            $.ajax({
+                type: 'POST',
+                url: '/getdata',
+                data: {
+                    id_department: selectedValue
+                },
+                success: function(response) {
+                    $('#id_building').empty().append($('<option>', {
+                        value: '',
+                        text: 'Выберите значение'
+                    }));
+
+                    for (let obj of response) {
+                        $('#id_building').append($('<option>', {
+                            value: obj.id_building,
+                            text: obj.name_building
+                        }));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $('#id_building').change(function() {
+            $('#id_floor').empty();
+            $('#id_room').empty();
+            $('#filter').addClass('invisible');
+            $('#results').empty();
+
+            // Получение выбранного значения
+            var selectedValue = $(this).val();
+            // Отправка AJAX запроса с выбранным значением
+            $.ajax({
+                type: 'POST',
+                url: '/getdata',
+                data: {
+                    id_building: selectedValue
+                },
+                success: function(response) {
+                    $('#id_floor').empty().append($('<option>', {
+                        value: '',
+                        text: 'Выберите значение'
+                    }));
+
+                    for (let obj of response) {
+                        $('#id_floor').append($('<option>', {
+                            value: obj.id_floor,
+                            text: obj.name_floor
+                        }));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $('#id_floor').change(function() {
+            $('#id_room').empty();
+            $('#filter').addClass('invisible');
+            $('#results').empty();
+
+            // Получение выбранного значения
+            var selectedValue = $(this).val();
+            // Отправка AJAX запроса с выбранным значением
+            $.ajax({
+                type: 'POST',
+                url: '/getdata',
+                data: {
+                    id_floor: selectedValue
+                },
+                success: function(response) {
+                    $('#id_room').empty().append($('<option>', {
+                        value: '',
+                        text: 'Выберите значение'
+                    }));
+
+                    for (let obj of response) {
+                        $('#id_room').append($('<option>', {
+                            value: obj.id_room,
+                            text: obj.name_room + ' (' + obj.number_room + ')'
+                        }));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $('#id_room').change(function() {
+            $('#filter').addClass('invisible');
+            $('#results').empty();
+
+            // Получение выбранного значения
+            var selectedValue = $(this).val();
+            // Отправка AJAX запроса с выбранным значением
+            $.ajax({
+                type: 'POST',
+                url: '/getdata',
+                data: {
+                    id_room: selectedValue
+                },
+                success: function(response) {
+                    if(response == 'OK'){
+                        $('#filter').removeClass('invisible');
+                        $('#filter').addClass('visible');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $('#filter_btn').click(function() {
+            $('#results').empty();
+
+            // Получение выбранного значения
+            var selectedValue = $('#id_room').val();
+            // Отправка AJAX запроса с выбранным значением
+            $.ajax({
+                type: 'POST',
+                url: '/filtermto',
+                data: {
+                    id_room: selectedValue
+                },
+                success: function(response) {
+                    $('#results').html(response);
+                    /*$('#results').css({
+                        'height': '600px',
+                        'overflow-y': 'auto'
+                    });*/
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+    });
+</script>
+{% endblock %}
